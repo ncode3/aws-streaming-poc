@@ -71,7 +71,40 @@
         .logout-btn:hover {
             background: #c82333;
         }
+        /* Simple grid for movies */
+        #movieGrid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .movie-card {
+            cursor: pointer;
+            text-align: center;
+        }
+        .movie-card img {
+            display: block;
+            max-width: 150px;
+            margin: 0 auto 10px;
+            border-radius: 4px;
+        }
+        .movie-card h3 {
+            margin: 0;
+        }
+        /* Video.js styling */
+        #playerContainer {
+            margin-top: 20px;
+        }
     </style>
+
+    <!-- Video.js CSS -->
+    <link 
+      href="https://unpkg.com/video.js/dist/video-js.css" 
+      rel="stylesheet"
+    />
+    <!-- Video.js JS -->
+    <script 
+      src="https://unpkg.com/video.js/dist/video.js">
+    </script>
 </head>
 <body>
     <!-- Auth Section -->
@@ -95,15 +128,25 @@
             <h1>Movie Streaming Platform</h1>
             <button class="logout-btn" onclick="logout()">Sign Out</button>
         </div>
-        <div id="movieGrid">
-            <!-- Movie content will be loaded here -->
+        <div id="movieGrid"></div>
+
+        <!-- Video player container -->
+        <div id="playerContainer" style="display: none;">
+            <video
+                id="myPlayer"
+                class="video-js vjs-default-skin"
+                controls
+                width="640"
+                height="360"
+                data-setup='{}'>
+            </video>
         </div>
     </div>
 
     <script>
+        // Replace this with your actual API Gateway endpoint if needed
         const API_URL = 'https://snemg11ntc.execute-api.us-east-1.amazonaws.com/Prod';
-        
-        // Check authentication on page load
+
         window.onload = function() {
             const token = localStorage.getItem('token');
             if (token) {
@@ -157,11 +200,11 @@
         }
 
         async function loadMovies() {
-            // We'll implement this when we set up the content-handler
+            // Hard-coded movie list
             const movies = [
                 { id: 'baby-driver', title: 'Baby Driver', image: 'movie1-baby-driver.png' },
-                { id: 'inception', title: 'Inception', image: 'movie2-inception.png' },
-                { id: 'speed', title: 'Speed', image: 'movie3-speed.png' }
+                { id: 'inception',   title: 'Inception',   image: 'movie2-inception.png' },
+                { id: 'speed',       title: 'Speed',       image: 'movie3-speed.png' }
             ];
 
             const movieGrid = document.getElementById('movieGrid');
@@ -173,10 +216,30 @@
             `).join('');
         }
 
+        // Initialize the Video.js player
+        let player; 
+        document.addEventListener('DOMContentLoaded', () => {
+            player = videojs('myPlayer');
+        });
+
         function playMovie(movieId) {
-            // We'll implement this when we set up video streaming
-            console.log(`Playing movie: ${movieId}`);
-            // Implementation coming soon
+            // All movies use the same .m3u8 for now
+            // Real production would have separate .m3u8 if you've transcoded multiple files
+            const hlsURL = "https://d1onv35nyurfbn.cloudfront.net/outputs/samplevideo.m3u8";
+
+            // Show the video player section
+            document.getElementById('playerContainer').style.display = 'block';
+
+            // Update Video.js source
+            if (player) {
+                player.src({
+                  type: 'application/x-mpegURL',
+                  src: hlsURL
+                });
+                player.play();
+            } else {
+                console.error('Video.js player not initialized.');
+            }
         }
     </script>
 </body>

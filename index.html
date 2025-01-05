@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Streaming Platform</title>
+    <style>
+        body { 
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial;
+            margin: 0;
+            padding: 20px;
+        }
+        .auth-container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            margin: 40px auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #authMessage {
+            color: #ff4444;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .content {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .logout-btn {
+            background: #dc3545;
+            padding: 8px 16px;
+            width: auto;
+        }
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="authSection" class="auth-container">
+        <h2 style="text-align: center; margin-bottom: 20px;">Sign In</h2>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        <button onclick="login()">Sign In</button>
+        <div id="authMessage"></div>
+    </div>
+
+    <!-- Content Section -->
+    <div id="content" class="content">
+        <div class="header">
+            <h1>Movie Streaming Platform</h1>
+            <button class="logout-btn" onclick="logout()">Sign Out</button>
+        </div>
+        <div id="movieGrid">
+            <!-- Movie content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://snemg11ntc.execute-api.us-east-1.amazonaws.com/Prod';
+        
+        // Check authentication on page load
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                showContent();
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                document.getElementById('authMessage').textContent = 'Please enter both username and password';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.tokens.IdToken);
+                    showContent();
+                    loadMovies();
+                } else {
+                    document.getElementById('authMessage').textContent = data.message || 'Invalid credentials';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('authMessage').textContent = 'Login failed. Please try again.';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('authMessage').textContent = '';
+        }
+
+        function showContent() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        async function loadMovies() {
+            // We'll implement this when we set up the content-handler
+            const movies = [
+                { id: 'baby-driver', title: 'Baby Driver', image: 'movie1-baby-driver.png' },
+                { id: 'inception', title: 'Inception', image: 'movie2-inception.png' },
+                { id: 'speed', title: 'Speed', image: 'movie3-speed.png' }
+            ];
+
+            const movieGrid = document.getElementById('movieGrid');
+            movieGrid.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="playMovie('${movie.id}')">
+                    <img src="https://d1onv35nyurfbn.cloudfront.net/${movie.image}" alt="${movie.title}">
+                    <h3>${movie.title}</h3>
+                </div>
+            `).join('');
+        }
+
+        function playMovie(movieId) {
+            // We'll implement this when we set up video streaming
+            console.log(`Playing movie: ${movieId}`);
+            // Implementation coming soon
+        }
+    </script>
+</body>
+</html>
